@@ -1,0 +1,8 @@
+name: Webform CiviCRM Migrate
+type: module
+description: Migration module for migrations from D7 to D9 Webform CiviCRM
+package: Custom
+core_version_requirement: ^9 || ^10
+dependencies:
+  - webform_civicrm
+  - migrate_plus

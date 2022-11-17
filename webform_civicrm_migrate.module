@@ -1,0 +1,34 @@
+<?php
+
+/**
+ * @file
+ * Primary module hooks for Fuzion Migrate module.
+ */
+
+/**
+ * @implements hook_webform_migrate_d7_webform_element_ELEMENT_TYPE_alter
+ */
+function webform_civicrm_migrate_webform_migrate_d7_webform_element_civicrm_contact_alter(&$markup, $indent, array $element) {
+  $extra = unserialize($element['extra']);
+  
+  $markup .= "$indent  '#type': civicrm_contact\n";
+  if (!empty($element['name'])) {
+    $markup .= "$indent  '#name': ".$element['name']."\n";
+  }
+  $widgetAdded = FALSE;
+  $properties = ['search_prompt', 'none_prompt', 'widget', 'default', 'allow_create'];
+  foreach ($properties as $p) {
+    if (!empty($extra[$p]) && !is_array($extra[$p])) {
+      if ($p == 'widget') {
+        $widgetAdded = TRUE;
+      }
+      $markup .= "$indent  '#{$p}': " . $extra[$p] . "\n";
+    }
+  }
+  
+  if (!$widgetAdded) {
+    $markup .= "$indent  '#widget': hidden\n";
+  }
+
+  return;
+}

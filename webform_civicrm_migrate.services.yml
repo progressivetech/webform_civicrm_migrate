@@ -1,0 +1,6 @@
+services:
+  webform_civicrm_migrate.event_subscriber:
+    class: Drupal\webform_civicrm_migrate\EventSubscriber\WebformCivicrmMigrateSubscriber
+    arguments: ['@messenger']
+    tags:
+      - { name: event_subscriber }
