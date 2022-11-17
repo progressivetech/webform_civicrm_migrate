@@ -216,11 +216,26 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
   private function migrateWebformElement(array $element, array $d7_form_settings, int $nid) {
     // First we check for children and process them.
     if ( WebformElementHelper::hasChildren($element)) {
-      # Deeper we must go
-      foreach($element as $key => $child_element) {
-        if ($key === '' || $key[0] !== '#') {
-          $element[$key] = $this->migrateWebformElement($child_element, $d7_form_settings, $nid);
+
+      $children = array_filter(
+        array_keys($element),
+        function($k){
+          return  ($k === '' || $k[0] !== '#');
         }
+      );
+
+      # Deeper we must go
+      foreach($children as $key) {
+        // Strip off key that was added by webform_migrate to "uniqify
+        // the id" - we only want to do this if we have a civicrm with
+        // appended _[0-9].
+        $new_key = preg_replace('/^(civicrm_.*)_[0-9]+$/', '$1', $key);
+        $child_element = $element[$key];
+        $child_element['#form_key'] = $new_key;
+        $element[$new_key] = $this->migrateWebformElement($child_element, $d7_form_settings, $nid);
+        // Unset to remove the old element to prevent double ups.
+        unset($element[$key]);
+
       }
 
     }
@@ -303,6 +318,7 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
 
     $elements = WebformYaml::decode($row->get('elements'));
     foreach($elements as $key => $element) {
+      $element['#form_key'] = $key; // This should be populated - but isn't here yet?
       $elements[$key] = $this->migrateWebformElement($element, $data, WebformCivicrmMigrateSubscriber::getNid($row));
     }
 
