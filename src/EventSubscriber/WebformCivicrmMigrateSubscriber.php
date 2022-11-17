@@ -53,23 +53,23 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
     ];
   }
 
-  
+
   /**
    * Helper function to get all Webforms.
    */
   public static function getAllWebforms(){
-    $webform_ids = \Drupal::entityQuery('webform')    
+    $webform_ids = \Drupal::entityQuery('webform')
                  ->execute();
     $webforms = [];
     foreach($webform_ids as $id => $title) {
-      $webforms[] = Webform::load($id);     
+      $webforms[] = Webform::load($id);
     }
     return $webforms;
   }
 
   /**
    * Gets a setting from a settings array based on key passed in.
-   * 
+   *
    * @param string $key in form civicrm_n_ent_m_id
    * @param array $array Settings array in format $array[entity][n][ent][m]
    * @param string $entity which type of entity to look for.
@@ -128,11 +128,11 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
       'expose_list' => FALSE,
       'empty_option' => '',
     ];
-    
+
     foreach($keys_to_copy as $extra_key => $extra_default) {
       $element['#' . $extra_key] = $extra[$extra_key] ?? $extra_default;
     }
-    
+
     if ($settings == FALSE || !isset($settings['contact_type'])) {
       throw new MigrateSkipRowException("Failed to find contact type from D7 Webform CiviCRM Settings");
     }
@@ -166,7 +166,7 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
       throw new MigrateSkipRowException("Expected one row per nid in webform_civicrm_forms got many for nid" . var_export($nid, TRUE));
     }
     $result = $query->fetch();
-    return unserialize($result->extra); // We only have one row per node.  
+    return unserialize($result->extra); // We only have one row per node.
   }
 
 
@@ -181,7 +181,7 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
   private static function getWebformCiviCRMData(int $nid) {
     $db = \Drupal\Core\Database\Database::getConnection('default', 'migrate');
     $query = $db->query("select nid, data, prefix_known, prefix_unknown, message, confirm_subscription, block_unknown_users, create_new_relationship, create_fieldsets, new_contact_source from {webform_civicrm_forms} where nid = " . $nid );
-    
+
     if ($query->rowCount > 1) {
       throw new MigrateSkipRowException("Expected one row per nid in webform_civicrm_forms got many for nid" . var_export($nid, TRUE));
     }
@@ -190,7 +190,7 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
 
   private static function getWebformCiviCRMSettings($row) {
     $nid = WebformCivicrmMigrateSubscriber::getNid($row);
-    return WebformCivicrmMigrateSubscriber::getWebformCiviCRMData($nid);    
+    return WebformCivicrmMigrateSubscriber::getWebformCiviCRMData($nid);
   }
 
   private static function getNid($row) {
@@ -200,13 +200,13 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
     }
     return $nid;
   }
-  
+
   /**
    * Recursive function which does a depth first search through
    * $element and applies relevant CiviCRM Webform Migrations to
    * elements it finds. Stops when finds no children.
    *
-   * @param array $element - Array Webform 
+   * @param array $element - Array Webform
    * @param array $d7_form_settings - The form settings from the D7 db.
    * @param int $nid NID of webform on D7
    *
@@ -222,12 +222,13 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
           $element[$key] = $this->migrateWebformElement($child_element, $d7_form_settings, $nid);
         }
       }
+
     }
 
     if (substr($element['#form_key'],0,7) != 'civicrm') {
       # Not a CiviCRM field. run away.
       return $element;
-    }    
+    }
 
     switch ($element['#type']){
     case 'civicrm_contact':
@@ -265,7 +266,7 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
    * Catch onPostImport Event.
    *
    * @param Drupal\migrate\Event\MigrateImportEvent $row
-   *   
+   *
    */
   public function onPostImport(MigrateImportEvent $event) {
     // Migration object about to begin import.
@@ -281,9 +282,9 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
         if (empty($webform_migration)) {
           # no migration mapping found - probably not a migrated webform! hopefully.
           continue;
-        }        
+        }
         $this->addCiviCRMHandler($webform, $webform_migration['sourceid1']);
-      }        
+      }
     }
   }
 
@@ -304,7 +305,6 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
     foreach($elements as $key => $element) {
       $elements[$key] = $this->migrateWebformElement($element, $data, WebformCivicrmMigrateSubscriber::getNid($row));
     }
-    var_export($elements);
 
     $row->setSourceProperty('elements', $elements);
  }
@@ -314,7 +314,7 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
     if (!empty($data['contact'])) {
       foreach($data['contact'] as $c => &$contact_data) {
         if (!empty($contact_data['contact'])) {
-          foreach($contact_data['contact'] as $d => &$contact_data_inner) {            
+          foreach($contact_data['contact'] as $d => &$contact_data_inner) {
             $data[$c . '_' . 'contact_type'] = $contact_data_inner['contact_type'] ?? '';
             $data[$c . '_' . 'webform_label'] = $contact_data_inner['webform_label'] ?? '';
             $data['civicrm_' . $c . '_contact_' . $d .  '_contact_contact_sub_type' ] = [];
