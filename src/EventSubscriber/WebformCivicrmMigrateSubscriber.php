@@ -347,6 +347,7 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
     if ($settings == FALSE || !isset($settings['contact_type'])) {
       throw new MigrateSkipRowException("Failed to find contact type from D7 Webform CiviCRM Settings");
     }
+
     return $element;
   }
 
