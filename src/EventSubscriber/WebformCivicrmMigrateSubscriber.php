@@ -295,14 +295,14 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
     $defaults = [
       'type' => 'civicrm_contact',
       'title' => 'Existing Contact',
-      'widget' =>  'hidden',
+      'widget' =>  'autocomplete',
       'none_prompt' => '',
       'show_hidden_contact' => '',
       'results_display' => ['display_name' => 'display_name'],
       'no_autofill' => ['' => ''],
       'hide_fields' => ['' => ''],
       'default' => '',
-      'contact_sub_type' => ['' => ''],
+      'contact_sub_type' => '',
       'allow_create' => 0,
       'contact_type' => 'individual',
       'name' => 'Existing Contact',
@@ -328,26 +328,37 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
       'empty_option' => '',
     ];
 
+
     // Override defaults with values from extra if they exist.
     foreach($defaults as $key => $default) {
       $element['#' . $key] = $extra[$key] ?? $default;
     }
+    // Check for any keys in extra that we don't have defaults for, or
+    // that are arrays.
+    foreach($extra as $key => $value) {
+      if (empty($key)) {
+        continue;
+      }
 
-    // Get the contact type and contact sub type from settings.
-    $element['#contact_type'] = $settings['contact_type'];
 
-    // Contact Sub type we need to lowercase everything.
-    if (!empty($settings['contact_sub_type'])) {
-      $element['#contact_sub_type'] = [];
-      foreach($settings['contact_sub_type'] as $sub_type_key => $sub_type_val) {
-        $element['#contact_sub_type'][strtolower($sub_type_key)] =  strtolower($sub_type_val);
+      if (empty($defaults[$key]) && !is_array($value) ) {
+        $element['#' . $key ] = $value;
+      }
+
+      // D8+ webform data is stored flat - not so on d7.
+      if (is_array($value)) {
+        foreach($value as $k => $v) {
+          if (empty($k)) {
+            continue;
+          }
+          // @todo investigate what is going on here but can't see where this is set in the UI.
+          if ($k == 'results_display') {
+            $element['#results_display'] = [$v => $v];
+          }
+          $element['#' . $k] = $v;
+        }
       }
     }
-
-    if ($settings == FALSE || !isset($settings['contact_type'])) {
-      throw new MigrateSkipRowException("Failed to find contact type from D7 Webform CiviCRM Settings");
-    }
-
     return $element;
   }
 
