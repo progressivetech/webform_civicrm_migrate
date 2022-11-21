@@ -306,7 +306,6 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
       'allow_create' => 0,
       'contact_type' => 'individual',
       'name' => 'Existing Contact',
-      'form_key' => $element['form_key'],
       'search_prompt' => '',
       // Below this line ordering hasn't been tested yet and are
       // ordered as per webform_civicrm.
