@@ -449,7 +449,6 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
       $elements[$key] = $this->migrateWebformElement($element, $data, WebformCivicrmMigrateSubscriber::getNid($row));
     }
 
-    var_dump($elements);
     $row->setSourceProperty('elements', $elements);
   }
 
