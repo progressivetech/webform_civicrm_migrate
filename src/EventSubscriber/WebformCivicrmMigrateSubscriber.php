@@ -359,6 +359,9 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
         }
       }
     }
+    if (empty($element['#contact_sub_type'])) {
+	unset($element['#contact_sub_type']);
+    }
     return $element;
   }
 
