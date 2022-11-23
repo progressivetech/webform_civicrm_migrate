@@ -454,6 +454,12 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
     # Fields come in as a yaml string - convert to Array then
     $data = $this->getWebformCiviCRMSettings($row);
 
+    // If no CiviCRM data then we can skip this form as it doesn't
+    // have any CiviCRM components.
+    if (empty($data)) {
+      return;
+    }
+
     $elements = WebformYaml::decode($row->get('elements'));
     $root_elements = WebformCivicrmMigrateSubscriber::getChildren($elements);
 
