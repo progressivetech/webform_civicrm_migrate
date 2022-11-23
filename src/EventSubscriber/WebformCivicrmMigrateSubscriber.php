@@ -53,7 +53,7 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
     ];
   }
 
-    /**
+  /**
    * React to a new row.
    *
    * @param \Drupal\migrate_plus\Event\MigratePrepareRowEvent $event
