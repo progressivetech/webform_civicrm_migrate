@@ -1,0 +1,13 @@
+{
+    "name": "drupal/webform_civicrm_migrate",
+    "type": "drupal-module",
+    "description": "Adds migrations for civicrm enabled webforms.",
+    "homepage": "https://github.com/fuzionnz/webform_civicrm_migrate",
+    "license": "GPL-2.0-or-later",
+    "require": {
+        "drupal/webform_civicrm": "^6.1",
+	"drupal/webform_migrate": "^1.0",
+	"drupal/migrate_plus": "^6.0"
+    },
+    "minimum-stability": "dev"
+}
