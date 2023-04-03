@@ -127,10 +127,11 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
    *
    * @return array An Array of webforms
    */
-  public static function getAllWebforms(){
+  public static function getAllWebforms() {
     $webform_ids = \Drupal::entityQuery('webform')
                  ->execute();
     $webforms = [];
+
     foreach($webform_ids as $id => $title) {
       $webforms[] = Webform::load($id);
     }
@@ -360,7 +361,7 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
       }
     }
     if (empty($element['#contact_sub_type'])) {
-	unset($element['#contact_sub_type']);
+      unset($element['#contact_sub_type']);
     }
     return $element;
   }
@@ -414,28 +415,28 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
         $child_element['#form_key'] = $new_key;
         $element[$new_key] = $this->migrateWebformElement($child_element, $d7_form_settings, $nid);
         # Unset to remove the old element to prevent double ups.
-        unset($element[$key]);
+        if ($new_key != $key) {
+          unset($element[$key]);
+        }
       }
     }
-
     # We are only acting on a CiviCRM Element.
-    if (substr($element['#form_key'],0,7) != 'civicrm') {
+    if (substr($element['#form_key'], 0, 7) != 'civicrm') {
       # Not a CiviCRM field. run away.
       return $element;
     }
 
-
     # We have a CiviCRM form element call relevant Function to
     # populate extra data.
     switch ($element['#type']){
-    case 'civicrm_contact':
-      $element = $this->migrateWebformElementCiviCRMContact($element, $d7_form_settings, $nid);
-      break;
-    case 'fieldset':
-      unset($element['#open']);
-      break;
-    default:
-      break;
+      case 'civicrm_contact':
+        $element = $this->migrateWebformElementCiviCRMContact($element, $d7_form_settings, $nid);
+        break;
+      case 'fieldset':
+        unset($element['#open']);
+        break;
+      default:
+        break;
     }
     return $element;
   }
