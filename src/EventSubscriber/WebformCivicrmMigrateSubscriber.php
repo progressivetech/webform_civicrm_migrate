@@ -201,11 +201,15 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
   public static function getWebformCiviCRMData(int $nid) {
     $db = \Drupal\Core\Database\Database::getConnection('default', 'migrate');
     $query = $db->query("select nid, data, prefix_known, prefix_unknown, message, confirm_subscription, block_unknown_users, create_new_relationship, create_fieldsets, new_contact_source from {webform_civicrm_forms} where nid = " . $nid );
+    $result = $query->fetch();
 
     if ($query->rowCount > 1) {
       throw new MigrateSkipRowException("Expected one row per nid in webform_civicrm_forms got many for nid" . var_export($nid, TRUE));
     }
-    return unserialize($query->fetch()->data); // We only have one row per node.
+    elseif (!empty($result->data)) {
+      return unserialize($result->data); // We only have one row per node.
+    }
+    return [];
   }
 
 
