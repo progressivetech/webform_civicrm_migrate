@@ -74,6 +74,7 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
       $this->migrateWebform($row);
       break;
     }
+    return TRUE;
   }
 
     /**
@@ -93,6 +94,7 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
       \Drupal::service('civicrm')->initialize();
       break;
     }
+    return TRUE;
   }
 
   /**
@@ -119,6 +121,7 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
         $this->addCiviCRMHandler($webform, $webform_migration['sourceid1']);
       }
     }
+    return TRUE;
   }
 
 
