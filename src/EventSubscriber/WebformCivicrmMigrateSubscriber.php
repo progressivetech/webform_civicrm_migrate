@@ -547,7 +547,7 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
 
     $handler = $webform->getHandlers('webform_civicrm');
     $config = $handler->getConfiguration();
-    $config['webform_civicrm']['settings'] = $this->migrateCiviCRMSettings($webformData, $default_settings);
+    $config['webform_civicrm']['settings'] = $this->migrateCiviCRMSettings($webformData, $config['webform_civicrm']['settings']);
 
     // Ensure that required keys are set to default if not present in
     // source webform.
