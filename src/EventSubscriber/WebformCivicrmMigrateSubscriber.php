@@ -418,6 +418,9 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
         $new_key = WebformCivicrmMigrateSubscriber::fixKey($key);
         # Copy child to new key, recurse and delete broken key
         # version.
+        if (!is_array($element[$key])) {
+          continue;
+        }
         $child_element = $element[$key];
         $child_element['#form_key'] = $new_key;
         $element[$new_key] = $this->migrateWebformElement($child_element, $d7_form_settings, $nid);
