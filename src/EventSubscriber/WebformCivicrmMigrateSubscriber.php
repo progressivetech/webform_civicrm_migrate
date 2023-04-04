@@ -482,6 +482,10 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
 
   public function migrateCiviCRMSettings($data, $default_settings) {
     $settings = $default_settings;
+    // Skip if no contacts (unlikely but possible).
+    if (empty($data['contact'])) {
+      return $settings;
+    }
     $settings['number_of_contacts']  = count($data['contact']);
 
     if (!empty($data['contact'])) {
@@ -533,6 +537,10 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
 
     # Get the data from the source webform.
     $webformData = WebformCivicrmMigrateSubscriber::getWebformCiviCRMData($nid);
+    // Skip if CiviCRM processing was turned off.
+    if (empty($webformData)) {
+      return;
+    }
 
     # Create a handler
     $manager = \Drupal::service('plugin.manager.webform.handler');
