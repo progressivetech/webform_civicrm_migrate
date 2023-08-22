@@ -5,9 +5,9 @@
     "homepage": "https://github.com/fuzionnz/webform_civicrm_migrate",
     "license": "GPL-2.0-or-later",
     "require": {
-        "drupal/webform_civicrm": "^6.1",
-	"drupal/webform_migrate": "^1.0",
-	"drupal/migrate_plus": "^6.0"
+        "drupal/webform_civicrm": "^6.2@beta",
+        "drupal/webform_migrate": "2.0.x-dev@dev",
+        "drupal/migrate_plus": "^6.0"
     },
     "minimum-stability": "dev"
 }
