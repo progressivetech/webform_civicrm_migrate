@@ -310,9 +310,9 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
       'no_autofill' => ['' => ''],
       'hide_fields' => ['' => ''],
       'default' => '',
-      'contact_sub_type' => '',
+      'contact_sub_type' => $settings['contact_sub_type'] ?? '',
       'allow_create' => 0,
-      'contact_type' => 'individual',
+      'contact_type' => $settings['contact_type'] ?? 'individual',
       'name' => 'Existing Contact',
       'search_prompt' => '',
       // Below this line ordering hasn't been tested yet and are
