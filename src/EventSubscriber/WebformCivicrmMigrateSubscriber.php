@@ -182,6 +182,9 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
       ':form_key' => $form_key
     ]
     );
+    if (!$query) {
+      return [];
+    }
     if ($query->rowCount > 1) {
       throw new MigrateSkipRowException("Expected one row per nid in webform_civicrm_forms got many for nid" . var_export($nid, TRUE));
     }
@@ -202,7 +205,9 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
     $db = \Drupal\Core\Database\Database::getConnection('default', 'migrate');
     $query = $db->query("select nid, data, prefix_known, prefix_unknown, message, confirm_subscription, block_unknown_users, create_new_relationship, create_fieldsets, new_contact_source from {webform_civicrm_forms} where nid = " . $nid );
     $result = $query->fetch();
-
+    if (!$query) {
+      return [];
+    }
     if ($query->rowCount > 1) {
       throw new MigrateSkipRowException("Expected one row per nid in webform_civicrm_forms got many for nid" . var_export($nid, TRUE));
     }
@@ -261,6 +266,9 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
       ':form_key' => $element['#form_key'],
     ]
     );
+    if (!$query) {
+      return [];
+    }
     if ($query->rowCount > 1) {
       throw new MigrateSkipRowException("Expected one row per nid in webform_civicrm_forms got many for nid" . var_export($nid, TRUE));
     }
