@@ -92,6 +92,9 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
     switch($migration_id) {
     case 'upgrade_d7_webform':
     case 'upgrade_d7_webform_submissions':
+    case 'd7_webform':
+    case 'd7_webform_submissions':
+
       \Drupal::service('civicrm')->initialize();
       break;
     }
@@ -111,6 +114,7 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
     $migration_map = $migration->getIdMap();
     switch($migration_id) {
     case 'upgrade_d7_webform':
+    case 'd7_webform':
       $webforms = WebformCivicrmMigrateSubscriber::getAllWebforms();
       foreach($webforms as $webform) {
 
