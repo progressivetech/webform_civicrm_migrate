@@ -71,6 +71,7 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
     // - then we look for pattern matches
     switch($migration_id) {
     case 'upgrade_d7_webform':
+    case 'd7_webform':
       $this->migrateWebform($row);
       break;
     }
