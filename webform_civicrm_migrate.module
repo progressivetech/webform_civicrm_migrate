@@ -5,3 +5,17 @@
  * Primary module hooks for Fuzion Migrate module.
  */
 
+/**
+ * Disable the webform_civicrm handler.
+ *
+ * Prevent webforms from re-processing data when they are migrated to avoid duplicate
+ * contacts and other data from being entered into CiviCRM.
+ */
+function webform_civicrm_migrate_webform_handler_invoke_alter(\Drupal\webform\Plugin\WebformHandlerInterface $handler, $method_name, array &$args) {
+  if ($method_name == 'pre_save') {
+    $id = $handler->getHandlerId();
+    if ($id == 'webform_civicrm') {
+      $handler->setStatus(FALSE);
+    }
+  }
+}
