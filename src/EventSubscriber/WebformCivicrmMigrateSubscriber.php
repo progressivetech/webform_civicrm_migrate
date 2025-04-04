@@ -257,6 +257,23 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
     ]
     );
     $result = $query->fetch();
+    if (!$result) {
+      // Sometimes the form_key has an extra trailing _123 on it. Try removing
+      // that and re-submitting.
+      if (preg_match('/_[0-9]+$/', $element['#form_key'])) {
+        $newElement = $element;
+        $newElement['#form_key'] = preg_replace('/_\d+$/', '', $element['#form_key']);
+        return self::fixElementType($newElement, $nid);
+      }
+      else {
+        echo "======\n\n";
+        echo "Failed to fixElementType. Search D7 site for: \n";
+        echo "SELECT type FROM webform_component \n";
+        echo "WHERE nid = {$nid} and form key = '{$element['#form_key']}'\n\n";
+        echo "=======\n\n";
+        return '';
+      }
+    }
     return $result->type;
 
   }
