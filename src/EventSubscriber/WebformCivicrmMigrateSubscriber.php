@@ -233,7 +233,8 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
    * Helper function to detect and fix a munged key.
    */
   public static function fixKey(string $key) {
-    return preg_replace('/^(civicrm_.*)_[0-9]+$/', '$1', $key);
+    // Sometimes a disabled existing contact will be prefaced with disabled_1 instead of civicrm_.
+    return preg_replace('/^(civicrm_.*|disabled_.*)_[0-9]+$/', '$1', $key);
   }
 
 
@@ -260,16 +261,18 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
     if (!$result) {
       // Sometimes the form_key has an extra trailing _123 on it. Try removing
       // that and re-submitting.
-      if (preg_match('/_[0-9]+$/', $element['#form_key'])) {
+      $newKey = WebformCivicrmMigrateSubscriber::fixKey($element['#form_key']);
+      if ($newKey != $element['#form_key']) {
         $newElement = $element;
-        $newElement['#form_key'] = preg_replace('/_\d+$/', '', $element['#form_key']);
+        $newElement['#form_key'] = $newKey;
+        // Try again.
         return self::fixElementType($newElement, $nid);
       }
       else {
         echo "======\n\n";
         echo "Failed to fixElementType. Search D7 site for: \n";
         echo "SELECT type FROM webform_component \n";
-        echo "WHERE nid = {$nid} and form key = '{$element['#form_key']}'\n\n";
+        echo "WHERE nid = {$nid} and form_key = '{$element['#form_key']}'\n\n";
         echo "=======\n\n";
         return '';
       }
@@ -425,24 +428,35 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
         # the id" - we only want to do this if we have a civicrm with
         # appended _[0-9].
         $new_key = WebformCivicrmMigrateSubscriber::fixKey($key);
-        # Copy child to new key, recurse and delete broken key
-        # version.
-        if (!is_array($element[$key])) {
+
+        // Make a copy of the element.
+        $child_element = $element[$key];
+
+        // Unset to avoid duplicates and ensure that all elements are put
+        // back in the right order.
+        unset($element[$key]);
+        if (!is_array($child_element)) {
+          // Not something we are interesed in, put it back and continue.
+          $element[$new_key] = $child_element;
           continue;
         }
-        $child_element = $element[$key];
+        // Update the #form_key item.
         $child_element['#form_key'] = $new_key;
+        // Rebuild
         $element[$new_key] = $this->migrateWebformElement($child_element, $d7_form_settings, $nid);
-        # Unset to remove the old element to prevent double ups.
-        if ($new_key != $key) {
-          unset($element[$key]);
-        }
       }
     }
     # We are only acting on a CiviCRM Element.
     if (substr($element['#form_key'], 0, 7) != 'civicrm') {
       # Not a CiviCRM field. run away.
       return $element;
+    }
+
+    // No idea why this is coming through as an array with one
+    // item that is empty. But... it causes drupal to barf.
+    $group = $element['#group'] ?? NULL;
+    if ($group && is_array($group)) {
+      $element['#group'] = '';
     }
 
     # We have a CiviCRM form element call relevant Function to
@@ -453,6 +467,29 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
         break;
       case 'fieldset':
         unset($element['#open']);
+        break;
+      case 'select':
+      case 'checkboxes':
+      case 'radios':
+        if (!array_key_exists('#civicrm_live_options', $element)) {
+          // By default assume the options have been modified.
+          $element['#civicrm_live_options'] = 0;
+        }
+        if ($element['#type'] == 'checkboxes') {
+          $element['#extra'] = ['multiple' => 1];
+        }
+        $element['#type'] = 'civicrm_options';
+        break;
+      case 'textfield':
+        // Fix state province fields that come through as text fields.
+        if (preg_match('/^(civicrm_).*_state_province_id$/', $element['#form_key'])) {
+          $element['#type'] = 'civicrm_options';
+          $element['#extra'] = ['aslist' => 1];
+          $element['#data_type'] = 'state_province_abbr';
+          $element['#civicrm_live_options'] = 1;
+          $element['#options'] = [];
+          unset($element['#size']);
+        }
         break;
       default:
         break;
