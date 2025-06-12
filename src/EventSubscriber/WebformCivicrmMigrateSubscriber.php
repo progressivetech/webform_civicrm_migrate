@@ -452,11 +452,11 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
       return $element;
     }
 
-    // No idea why this is coming through as an array with one
-    // item that is empty. But... it causes drupal to barf.
+    // #group has been changed to crmgroup
     $group = $element['#group'] ?? NULL;
     if ($group && is_array($group)) {
-      $element['#group'] = '';
+      $element['#crmgroup'] = $element['#group'];
+      unset($element['#group']);
     }
 
     # We have a CiviCRM form element call relevant Function to
@@ -470,6 +470,7 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
         break;
       case 'select':
       case 'checkboxes':
+      case 'checkbox':
       case 'radios':
         if (!array_key_exists('#civicrm_live_options', $element)) {
           // By default assume the options have been modified.
