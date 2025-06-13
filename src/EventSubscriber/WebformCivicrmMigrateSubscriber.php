@@ -459,6 +459,14 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
       unset($element['#group']);
     }
 
+    // #unique is only ignored if it is not set. During the upgrade we sometimes
+    // get $element['#unique'] = 0 which causes problems.
+    if (array_key_exists('#unique', $element)) {
+      if (!$element['#unique']) {
+        unset($element['#unique']);
+      }
+    }
+
     # We have a CiviCRM form element call relevant Function to
     # populate extra data.
     switch ($element['#type']){
