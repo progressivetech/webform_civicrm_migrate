@@ -459,6 +459,15 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
       unset($element['#group']);
     }
 
+    if (preg_match('/existing_contact/', $element['#form_key'])) {
+      // This key seems to cause existing contacts to not be properly
+      // set.
+      $name = $element['#name'] ?? NULL;
+      if ($name) {
+        unset($element['#name']);
+      }
+    }
+
     // #unique is only ignored if it is not set. During the upgrade we sometimes
     // get $element['#unique'] = 0 which causes problems.
     if (array_key_exists('#unique', $element)) {
