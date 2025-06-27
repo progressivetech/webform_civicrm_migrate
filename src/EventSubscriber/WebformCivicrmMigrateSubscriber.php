@@ -454,7 +454,7 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
 
     // #group has been changed to crmgroup
     $group = $element['#group'] ?? NULL;
-    if ($group && is_array($group)) {
+    if (!is_null($group) && is_array($group)) {
       $element['#crmgroup'] = $element['#group'];
       unset($element['#group']);
     }
