@@ -490,8 +490,7 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
       case 'checkbox':
       case 'radios':
         if (!array_key_exists('#civicrm_live_options', $element)) {
-          // By default assume the options have been modified.
-          $element['#civicrm_live_options'] = 0;
+          $element['#civicrm_live_options'] = 1;
         }
         if ($element['#type'] == 'checkboxes') {
           $element['#extra'] = ['multiple' => 1];
