@@ -325,7 +325,6 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
       'contact_sub_type' => $settings['contact_sub_type'] ?? '',
       'allow_create' => 0,
       'contact_type' => $settings['contact_type'] ?? 'individual',
-      'name' => 'Existing Contact',
       'search_prompt' => '',
       // Below this line ordering hasn't been tested yet and are
       // ordered as per webform_civicrm.
@@ -341,7 +340,6 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
       'dupes_allowed' => FALSE,
       'filter_relationship_types' => ['' => ''],
       'filter_relationship_contact' => ['' => ''],
-      'group' => ['' => ''],
       'tag' => ['' => ''],
       'check_permissions' => 1,
       'expose_list' => FALSE,
@@ -412,10 +410,8 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
     if (empty($element['#type'])) {
       $element['#type'] = WebformCivicrmMigrateSubscriber::fixElementType($element, $nid);
     }
-
     # Check for children and process them.
     if ( WebformElementHelper::hasChildren($element)) {
-
       # Children are saved alongside properties - properties have
       # leading '#' in key.
       $children = WebformCivicrmMigrateSubscriber::getChildren($element);
@@ -452,29 +448,6 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
       return $element;
     }
 
-    // #group has been changed to crmgroup
-    $group = $element['#group'] ?? NULL;
-    if (!is_null($group) && is_array($group)) {
-      $element['#crmgroup'] = $element['#group'];
-      unset($element['#group']);
-    }
-
-    if (preg_match('/existing_contact/', $element['#form_key'])) {
-      // This key seems to cause existing contacts to not be properly
-      // set.
-      $name = $element['#name'] ?? NULL;
-      if ($name) {
-        unset($element['#name']);
-      }
-    }
-
-    // #unique is only ignored if it is not set. During the upgrade we sometimes
-    // get $element['#unique'] = 0 which causes problems.
-    if (array_key_exists('#unique', $element)) {
-      if (!$element['#unique']) {
-        unset($element['#unique']);
-      }
-    }
 
     # We have a CiviCRM form element call relevant Function to
     # populate extra data.
@@ -505,12 +478,59 @@ class WebformCivicrmMigrateSubscriber implements EventSubscriberInterface {
           $element['#data_type'] = 'state_province_abbr';
           $element['#civicrm_live_options'] = 1;
           $element['#options'] = [];
+          $defaultValue = $element['#default'] ?? NULL;
+          if ($defaultValue && !is_numeric($defaultValue)) {
+            // Assume US
+            $countryId = 1228;
+            $connection = Database::getConnection();
+            $query = $connection->select('civicrm_state_province', 'csp')
+              ->fields('csp', ['id'])
+              ->condition(
+                $connection->orConditionGroup()
+                  ->condition('csp.abbreviation', $defaultValue, '=')
+                  ->condition('csp.name', $defaultValue, '=')
+              )
+              ->condition('csp.country_id', $countryId, '=');
+            $row = $query->execute()->fetchObject();
+            if ($row) {
+              $element['#default'] = $row->id;
+            }
+            else {
+              $element['#default'] = '';
+            }
+          }
+
           unset($element['#size']);
         }
         break;
       default:
         break;
     }
+
+    // #group has been changed to crmgroup
+    $group = $element['#group'] ?? NULL;
+    if (!is_null($group) && is_array($group)) {
+      $element['#crmgroup'] = $element['#group'];
+      unset($element['#group']);
+    }
+
+    if (preg_match('/existing_contact/', $element['#form_key'])) {
+      // This key seems to cause existing contacts to not be properly
+      // set.
+      $name = $element['#name'] ?? NULL;
+      if ($name) {
+        unset($element['#name']);
+      }
+    }
+
+    // #unique is only ignored if it is not set. During the upgrade we sometimes
+    // get $element['#unique'] = 0 which causes problems.
+    if (array_key_exists('#unique', $element)) {
+      if (!$element['#unique']) {
+        unset($element['#unique']);
+      }
+    }
+
     return $element;
   }
 
